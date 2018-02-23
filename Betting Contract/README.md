@@ -1,3 +1,6 @@
+my partner for this was Surya Duggirala
+
+
 # Betting Contract
 Build a simple betting contract that rewards correct guesses of outcomes. This contract utilizes aspects of game theory; you may want to use a paper and pen to make a note of possible game states that may arise.
 

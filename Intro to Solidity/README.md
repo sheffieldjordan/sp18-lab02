@@ -1,3 +1,7 @@
+my partner for this was Surya Duggirala
+
+
+
 # Simple Solidity Exercises
 
 *   A ‘greeter’ contract with a 'greet' method that returns the string “hello, World!”
