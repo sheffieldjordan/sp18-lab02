@@ -11,7 +11,11 @@ contract Betting {
     address public oracle;
     address public owner;
 
+    address[] public gamblerArray;
+    address[] public winners;
+
     uint[] possibleOutcomes;
+    uint public amountTotal;
 
     mapping (address => bool) public gamblers;
     mapping (address => Bet) private bets;
@@ -54,16 +58,18 @@ contract Betting {
 
     /* Gamblers place their bets, preferably after calling checkOutcomes */
     function makeBet(uint _outcome) public payable returns (bool) {
+        require(msg.sender != 0);
         if (msg.sender != oracle &&
             msg.sender != owner) {
 
-        Bet memory newBet = Bet({
-            outcome: _outcome,
-            amount: msg.value,
-            initialized: true
-        });
+            Bet memory newBet = Bet({
+                outcome: _outcome,
+                amount: msg.value,
+                initialized: true
+            });
         bets[msg.sender] = newBet;
-
+        gamblerArray.push(msg.sender);
+    
         } else {
              revert();
              return false;
@@ -73,28 +79,28 @@ contract Betting {
     }
     /* The oracle chooses which outcome wins */
     function makeDecision(uint _outcome) public oracleOnly() outcomeExists(_outcome) {
-        require(bets[gamblerA].initialized == true &&
-                bets[gamblerB].initialized == true);
-        uint aBet = bets[gamblerA].outcome;
-        uint bBet = bets[gamblerB].outcome;
-        uint aWager = bets[gamblerA].amount;
-        uint bWager = bets[gamblerB].amount;
-
-        if (aBet == _outcome || bBet == _outcome) {
-            if (aBet == bBet) {
-                winnings[gamblerA] = aWager;
-                winnings[gamblerB] = bWager;
-            } else if (aBet == _outcome && bBet != _outcome) {
-                winnings[gamblerA] = aWager + bWager;
-            } else if (bBet == _outcome && aBet != _outcome) {
-                winnings[gamblerB] = aWager + bWager;
+        uint i;
+        for (i=0; i < gamblerArray.length; i++) {
+            require(bets[gamblerArray[i]].initialized == true);
+            amountTotal += bets[gamblerArray[i]].amount;
+            if(bets[gamblerArray[i]].outcome == _outcome) {
+                winners.push(gamblerArray[i]);
+                continue;
+            } else {
+                continue;
             }
-        } else {
-            winnings[oracle] = aWager + bWager;
-        }
-        BetClosed();
-    }
 
+        if (winners[0] == 0) {
+            winnings[oracle] = amountTotal;
+            } else {
+                for (i=0; i < winners.length; i++) {
+            winnings[winners[i]] = amountTotal / winners.length;
+                }
+            }
+
+        BetClosed();
+        }
+    }
     /* Allow anyone to withdraw their winnings safely (if they have enough) */
     function withdraw(uint withdrawAmount) public returns (uint) {
         require(withdrawAmount >= winnings[msg.sender]);
@@ -114,11 +120,12 @@ contract Betting {
 
     /* Call delete() to reset certain state variables. Which ones? That's upto you to decide */
     function contractReset() public ownerOnly() {
-        delete(bets[gamblerA]);
-        delete(bets[gamblerB]);
-        delete(gamblerA);
-        delete(gamblerB);
-
+        uint i;
+        delete(winners);
+        for (i=0; i <= gamblerArray.length; i++) {
+            delete(bets[gamblerArray[i]]);
+        delete(gamblerArray);
+        }
     }
       /* Fallback function */
     function() public payable {
