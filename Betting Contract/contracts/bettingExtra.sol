@@ -69,7 +69,7 @@ contract Betting {
             });
         bets[msg.sender] = newBet;
         gamblerArray.push(msg.sender);
-    
+
         } else {
              revert();
              return false;
