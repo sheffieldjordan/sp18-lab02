@@ -61,7 +61,7 @@ contract Betting {
         require(msg.sender != 0);
         if (msg.sender != oracle &&
             msg.sender != owner) {
-
+              
             Bet memory newBet = Bet({
                 outcome: _outcome,
                 amount: msg.value,
